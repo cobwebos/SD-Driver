@@ -829,7 +829,6 @@ public class TimestampUtils {
      * @return The extracted date.
      */
     public Date convertToDate(Timestamp timestamp, TimeZone tz) {
-
         long millis = timestamp.getTime();
         // no adjustments for the inifity hack values
         if (millis <= PGStatement.DATE_NEGATIVE_INFINITY ||
@@ -839,9 +838,13 @@ public class TimestampUtils {
         if (tz == null) {
             tz = defaultTz;
         }
-        millis = millis / 86400000 * 86400000;
-
-        millis -= tz.getOffset(millis);
+        int offset = tz.getOffset(millis) + tz.getDSTSavings();
+        long timePart = millis % ONEDAY;
+        if (timePart + offset >= ONEDAY) {
+            millis += ONEDAY;
+        }
+        millis -= timePart;
+        millis -= offset;
 
         return new Date(millis);
     }

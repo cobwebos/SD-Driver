@@ -115,8 +115,6 @@ public abstract class AbstractJdbc2ResultSet implements BaseResultSet, org.postg
 
     protected abstract ResultSetMetaData createMetaData() throws SQLException;
 
-    private static final Calendar UTC = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-
     public ResultSetMetaData getMetaData() throws SQLException
     {
         checkClosed();
@@ -490,8 +488,7 @@ public abstract class AbstractJdbc2ResultSet implements BaseResultSet, org.postg
                 return connection.getTimestampUtils().toDateBin(tz, this_row[col]);
             } else if (oid == Oid.TIMESTAMP || oid == Oid.TIMESTAMPTZ) {
                 // JDBC spec says getDate of Timestamp must be supported
-                // don't add offset to the timestamp, convertToDate will add the tz specified
-                return connection.getTimestampUtils().convertToDate(getTimestamp(i, UTC), tz);
+                return connection.getTimestampUtils().convertToDate(getTimestamp(i, cal), tz);
             } else {
                 throw new PSQLException (GT.tr("Cannot convert the column of type {0} to requested type {1}.",
                         new Object[]{Oid.toString(oid), "date"}),
@@ -520,8 +517,7 @@ public abstract class AbstractJdbc2ResultSet implements BaseResultSet, org.postg
                 return connection.getTimestampUtils().toTimeBin(tz, this_row[col]);
             } else if (oid == Oid.TIMESTAMP || oid == Oid.TIMESTAMPTZ) {
                 // JDBC spec says getTime of Timestamp must be supported
-                // use timestamp at UTC
-                return connection.getTimestampUtils().convertToTime(getTimestamp(i, UTC), tz);
+                return connection.getTimestampUtils().convertToTime(getTimestamp(i, cal), tz);
             } else {
                 throw new PSQLException (GT.tr("Cannot convert the column of type {0} to requested type {1}.",
                         new Object[]{Oid.toString(oid), "time"}),
